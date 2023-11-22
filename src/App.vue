@@ -1,13 +1,9 @@
 <template>
   <div>
-    硅谷外卖
+    <router-view />
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts"></script>
 
-</script>
-
-<style scoped>
-
-</style>
+<style scoped lang="scss"></style>
