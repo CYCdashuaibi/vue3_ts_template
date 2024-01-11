@@ -3,7 +3,7 @@
     <el-form :inline="true">
       <el-form-item label="一级分类">
         <el-select
-          :disabled="scene === 1"
+          :disabled="scene !== 0"
           v-model="category1Id"
           @change="category1Change"
         >
@@ -17,7 +17,7 @@
       </el-form-item>
       <el-form-item label="二级分类">
         <el-select
-          :disabled="scene === 1"
+          :disabled="scene !== 0"
           v-model="category2Id"
           @change="category2Change"
         >
@@ -31,7 +31,7 @@
       </el-form-item>
       <el-form-item label="三级分类">
         <el-select
-          :disabled="scene === 1"
+          :disabled="scene !== 0"
           v-model="category3Id"
           @change="category3Change"
         >
@@ -76,9 +76,9 @@ const category1List = ref<ICategory1[]>([])
 const category2List = ref<ICategory2[]>([])
 const category3List = ref<ICategory3[]>([])
 
-const category1Id = ref<number>('')
-const category2Id = ref<number>('')
-const category3Id = ref<number>('')
+const category1Id = ref<number | null>(null)
+const category2Id = ref<number | null>(null)
+const category3Id = ref<number | null>(null)
 
 // 自定义事件
 const $emit = defineEmits(['categoryChange', 'update:addBtnDisabled'])
@@ -86,11 +86,11 @@ const $emit = defineEmits(['categoryChange', 'update:addBtnDisabled'])
 // 一级分类改变
 const category1Change = async () => {
   // 重置二级分类和三级分类
-  category2Id.value = ''
-  category3Id.value = ''
+  category2Id.value = null
+  category3Id.value = null
   // 禁用父组件的添加按钮
   $emit('update:addBtnDisabled', true)
-  const res = await reqCategory2(category1Id.value)
+  const res = await reqCategory2(category1Id.value as number)
   if (res.code === CodeStatus.SUCCESS) {
     category2List.value = res.data
   }
@@ -99,10 +99,10 @@ const category1Change = async () => {
 // 二级分类改变
 const category2Change = async () => {
   // 重置三级分类
-  category3Id.value = ''
+  category3Id.value = null
   // 禁用父组件的添加按钮
   $emit('update:addBtnDisabled', true)
-  const res = await reqCategory3(category2Id.value)
+  const res = await reqCategory3(category2Id.value as number)
   if (res.code === CodeStatus.SUCCESS) {
     category3List.value = res.data
   }
