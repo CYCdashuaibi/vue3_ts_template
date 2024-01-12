@@ -82,8 +82,9 @@
             <el-button
               icon="InfoFilled"
               type="info"
-              title="查看SKU列表"
+              title="查看商品详情"
               size="small"
+              @click="showDetail(scope.row)"
             ></el-button>
             <el-popconfirm title="确认删除吗?">
               <template #reference>
@@ -111,12 +112,87 @@
         @current-change="handleCurrentChange"
       />
     </el-card>
+
+    <!-- 商品详情抽屉 -->
+    <el-drawer v-model="isShowDetail" size="45%" direction="rtl">
+      <template #header>
+        <h4>查看商品详情</h4>
+      </template>
+      <template #default>
+        <div class="deteail-item">
+          <div class="label">名称</div>
+          <div class="content">{{ spuDetail.skuName }}</div>
+        </div>
+        <div class="deteail-item">
+          <div class="label">描述</div>
+          <div class="content">{{ spuDetail.skuDesc }}</div>
+        </div>
+        <div class="deteail-item">
+          <div class="label">价格</div>
+          <div class="content">￥{{ spuDetail.price }}</div>
+        </div>
+        <div class="deteail-item">
+          <div class="label">平台属性</div>
+          <div class="content">
+            <el-tag
+              type="warning"
+              v-for="skuAttrValue in spuDetail.skuAttrValueList"
+              :key="skuAttrValue.id"
+              style="margin: 2px"
+            >
+              {{ skuAttrValue.valueName }}
+            </el-tag>
+          </div>
+        </div>
+        <div class="deteail-item">
+          <div class="label">销售属性</div>
+          <div class="content">
+            <el-tag
+              type="success"
+              v-for="saleAttrValue in spuDetail.skuSaleAttrValueList"
+              :key="saleAttrValue.id"
+              style="margin: 2px"
+            >
+              {{ saleAttrValue.saleAttrName }}
+            </el-tag>
+          </div>
+        </div>
+        <div class="deteail-item">
+          <div class="label">商品图片</div>
+          <div class="content">
+            <el-carousel :interval="5000">
+              <el-carousel-item
+                v-for="(skuImage, index) in spuDetail.skuImageList"
+                :key="skuImage.id"
+              >
+                <el-image
+                  style="height: 100%; width: 100%"
+                  :src="skuImage.imgUrl"
+                  :preview-src-list="
+                    spuDetail?.skuImageList?.map((item) => item.imgUrl)
+                  "
+                  :initial-index="index"
+                  preview-teleported
+                  fit="contain"
+                />
+                <!-- {{ skuImage.imgUrl }} -->
+              </el-carousel-item>
+            </el-carousel>
+          </div>
+        </div>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { reqGetSkuList, reqCancelSale, reqOnSale } from '@/api/product/sku'
+import {
+  reqGetSkuList,
+  reqCancelSale,
+  reqOnSale,
+  reqGetSkuInfo,
+} from '@/api/product/sku'
 import { ISkuListResponse, ISkuData } from '@/api/product/sku/type'
 import { CodeStatus } from '@/utils/common'
 import { ElMessage } from 'element-plus'
@@ -134,6 +210,23 @@ let total = ref<number>(0)
 
 // sku 列表
 let skuList = ref<ISkuData[]>([])
+
+// 商品详情抽屉是否显示
+let isShowDetail = ref<boolean>(false)
+// 商品详情数据
+let spuDetail = ref<ISkuData>({
+  category3Id: null,
+  spuId: null,
+  tmId: null,
+  skuName: '',
+  isSale: null,
+  price: null,
+  weight: null,
+  skuDesc: '',
+  skuDefaultImg: '',
+  skuAttrValueList: [],
+  skuSaleAttrValueList: [],
+})
 
 const categoryChange = async () => {
   // 重置添加按钮的禁用状态
@@ -184,9 +277,46 @@ const updateSku = (row: ISkuData) => {
   console.log(row)
 }
 
+// 展示商品详情
+const showDetail = async (row: ISkuData) => {
+  const res = await reqGetSkuInfo(row.id as number)
+
+  if (res.code === CodeStatus.SUCCESS) {
+    isShowDetail.value = true
+    spuDetail.value = res.data
+  } else {
+    ElMessage.error('获取商品详情数据失败')
+  }
+}
+
 onMounted(() => {
   getSkuList()
 })
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.deteail-item {
+  display: flex;
+  margin-top: 15px;
+  align-items: center;
+
+  .label {
+    width: 70px;
+    text-align: right;
+    margin-right: 15px;
+    color: #606266;
+  }
+
+  .content {
+    flex: 1;
+  }
+}
+
+.el-carousel__item:nth-child(2n) {
+  background-color: #99a9bf;
+}
+
+.el-carousel__item:nth-child(2n + 1) {
+  background-color: #d3dce6;
+}
+</style>
