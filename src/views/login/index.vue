@@ -120,6 +120,7 @@ const login = async (formEl: FormInstance | undefined) => {
         await userStore.getUserInfo()
         // 编程式导航跳转至展示数据首页
         const redirect = $route.query.redirect as string
+        console.log(redirect)
         $router.push({ path: redirect || '/' })
         ElNotification({
           title: `Hi, ${getTime()}好！`,

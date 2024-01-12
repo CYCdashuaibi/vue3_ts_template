@@ -16,7 +16,7 @@ const userStore = useUserStore(pinia)
 const whiteList = ['/login']
 
 // 全局前置守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // 更改页面标题
   document.title = `${setting.title}-${to.meta.title}`
 
@@ -24,17 +24,29 @@ router.beforeEach((to, from, next) => {
   const isLogin = userStore.token ? true : false
 
   nprogress.start()
+
   // 已登录不能访问登录页面
-  if (isLogin && to.path === '/login') {
-    next(from.path)
-  }
   if (isLogin) {
-    next()
+    if (to.path === '/login') {
+      next(from.path)
+    } else {
+      if (Object.keys(userStore.userInfo).length) {
+        next()
+      } else {
+        try {
+          await userStore.getUserInfo()
+          next()
+        } catch (error) {
+          await userStore.userLogout()
+          next({ path: '/login', query: { redirect: to.path } })
+        }
+      }
+    }
   } else {
     if (whiteList.includes(to.path)) {
       next()
     } else {
-      next('/login')
+      next({ path: '/login', query: { redirect: to.path } })
     }
   }
 })

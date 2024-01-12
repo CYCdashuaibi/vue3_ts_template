@@ -12,12 +12,13 @@ import {
   SET_TOKEN,
   GET_TOKEN,
   REMOVE_TOKEN,
-  SET_USER_INFO,
-  GET_USER_INFO,
-  REMOVE_USER_INFO,
+  // SET_USER_INFO,
+  // GET_USER_INFO,
+  // REMOVE_USER_INFO,
 } from '@/utils/localStorage'
 // 引入常量路由
 import { constantRoutes } from '@/router/routes'
+import { ElMessage } from 'element-plus'
 
 // 创建用户仓库
 const useUserStore = defineStore('User', {
@@ -26,7 +27,8 @@ const useUserStore = defineStore('User', {
     return {
       token: GET_TOKEN() || '',
       menuRoutes: constantRoutes,
-      userInfo: JSON.parse(GET_USER_INFO() as string) || {},
+      // userInfo: JSON.parse(GET_USER_INFO() as string) || {},
+      userInfo: {},
     }
   },
   // 异步 | 逻辑
@@ -49,9 +51,10 @@ const useUserStore = defineStore('User', {
       if (res.code === CodeStatus.SUCCESS) {
         this.userInfo = res.data as IUserInfo
         // 将用户信息存储到本地
-        SET_USER_INFO(JSON.stringify(res.data))
+        // SET_USER_INFO(JSON.stringify(res.data))
         return res.data
       } else {
+        ElMessage.error(res.message)
         return Promise.reject(new Error(res.message))
       }
     },
@@ -63,7 +66,7 @@ const useUserStore = defineStore('User', {
         this.userInfo = {}
         // 清除本地存储
         REMOVE_TOKEN()
-        REMOVE_USER_INFO()
+        // REMOVE_USER_INFO()
       } else {
         return Promise.reject(new Error(res.message))
       }

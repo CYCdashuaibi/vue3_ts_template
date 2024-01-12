@@ -76,7 +76,7 @@
               icon="Edit"
               size="small"
               type="warning"
-              @click="updateUser(scope.row)"
+              @click="updateUserBefore(scope.row)"
             >
               编辑
             </el-button>
@@ -99,9 +99,14 @@
     </el-card>
 
     <!-- 添加或修改用户的抽屉 -->
-    <el-drawer v-model="isShowDrawer" size="35%" direction="rtl">
+    <el-drawer
+      @close="drawerClose"
+      v-model="isShowDrawer"
+      size="35%"
+      direction="rtl"
+    >
       <template #header>
-        <h4>添加用户</h4>
+        <h4>{{ userParams.id ? '修改用户' : '添加用户' }}</h4>
       </template>
       <template #default>
         <el-form ref="userFormRef" :model="userParams" :rules="userFormRules">
@@ -117,7 +122,7 @@
               plcaeholder="请输入用户昵称"
             ></el-input>
           </el-form-item>
-          <el-form-item prop="password" label="用户密码">
+          <el-form-item v-if="!userParams.id" prop="password" label="用户密码">
             <el-input
               v-model="userParams.password"
               plcaeholder="请输入用户密码"
@@ -135,12 +140,16 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { reqGetUserList, reqAddOrUpdateUser } from '@/api/acl/user'
 import { IUserListResponse, IUser } from '@/api/acl/user/type'
 import { CodeStatus } from '@/utils/common'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import useUserStore from '@/store/modules/user'
+
+// 用户仓库
+const userStore = useUserStore()
 
 defineOptions({
   name: 'User',
@@ -179,9 +188,12 @@ const userFormRules = reactive<FormRules<IUser>>({
   ],
   name: [
     { required: true, message: '请输入用户昵称' },
-    { min: 4, max: 5, message: '用户昵称长度为4-16位' },
+    { min: 4, max: 16, message: '用户昵称长度为4-16位' },
   ],
 })
+
+// 原始用户名，用于保存修改之前的用户名
+let originalUsername = ref<string>('')
 
 // 每页显示数据数变化
 const handleSizeChange = () => {
@@ -221,19 +233,44 @@ const addUser = () => {
   initParams()
 
   isShowDrawer.value = true
+}
 
-  // 清空表单错误提示
-  nextTick(() => {
-    if (userFormRef.value) {
-      userFormRef.value.resetFields()
-    }
-  })
+const updateUserBefore = (row: IUser) => {
+  originalUsername.value = row.username
+
+  if (row.username == userStore.userInfo.name) {
+    ElMessageBox.confirm(
+      '修改正在登录的用户将会被强制退出登录, 是否继续?',
+      '警告',
+      {
+        confirmButtonText: '继续',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+      .then(() => {
+        updateUser(row)
+      })
+      .catch(() => {
+        return
+      })
+  } else {
+    updateUser(row)
+  }
 }
 
 // 修改用户
 const updateUser = (row: IUser) => {
+  // 初始化参数
   initParams()
-  console.log(row)
+  delete userParams.password
+
+  // 收集用户信息
+  Object.assign(userParams, {
+    id: row.id,
+    username: row.username,
+    name: row.name,
+  })
   isShowDrawer.value = true
 }
 
@@ -248,7 +285,14 @@ const save = async (formEl: FormInstance | undefined) => {
 
       if (res.code === CodeStatus.SUCCESS) {
         ElMessage.success(userParams.id ? '修改成功' : '添加成功')
-        getUserList()
+        isShowDrawer.value = false
+
+        // 如果修改的是当前登录的用户，则刷新页面
+        if (originalUsername.value === userStore.userInfo.name) {
+          window.location.reload()
+        }
+
+        getUserList(userParams.id ? pageNo.value : 1)
       } else {
         ElMessage.error(userParams.id ? '修改失败' : '添加失败')
       }
@@ -261,6 +305,13 @@ const save = async (formEl: FormInstance | undefined) => {
 // 取消按钮
 const cancel = () => {
   isShowDrawer.value = false
+}
+
+// 抽屉关闭
+const drawerClose = () => {
+  if (userFormRef.value) {
+    userFormRef.value.resetFields()
+  }
 }
 
 onMounted(() => {
