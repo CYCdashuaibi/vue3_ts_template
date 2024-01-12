@@ -41,35 +41,42 @@
           prop="username"
           align="center"
           label="用户姓名"
-          show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           prop="name"
           align="center"
           label="用户昵称"
-          show-overflow-tooltip
         ></el-table-column>
-        <el-table-column
-          prop="roleName"
-          align="center"
-          label="用户角色"
-          show-overflow-tooltip
-        ></el-table-column>
+        <el-table-column prop="roleName" align="center" label="用户角色">
+          <template #default="{ row }">
+            <el-tag
+              style="margin: 2px"
+              v-for="item in row.roleName.split(',')"
+              :key="item"
+              type="success"
+            >
+              {{ item }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="createTime"
           align="center"
           label="创建时间"
-          show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           prop="updateTime"
           align="center"
           label="更新时间"
-          show-overflow-tooltip
         ></el-table-column>
         <el-table-column width="270px" align="center" label="操作">
           <template #default="scope">
-            <el-button icon="User" size="small" type="primary">
+            <el-button
+              icon="User"
+              size="small"
+              type="primary"
+              @click="setRole(scope.row)"
+            >
               分配角色
             </el-button>
             <el-button
@@ -101,7 +108,7 @@
     <!-- 添加或修改用户的抽屉 -->
     <el-drawer
       @close="drawerClose"
-      v-model="isShowDrawer"
+      v-model="isShowAddOrUpdateDrawer"
       size="35%"
       direction="rtl"
     >
@@ -136,13 +143,63 @@
         <el-button type="primary" @click="save(userFormRef)">确定</el-button>
       </template>
     </el-drawer>
+
+    <!-- 分配角色抽屉 -->
+    <el-drawer v-model="isShowRoleDrawer" size="35%" direction="rtl">
+      <template #header>
+        <h4>分配用户角色</h4>
+      </template>
+      <template #default>
+        <el-form :model="roleParams">
+          <el-form-item prop="username" label="用户姓名">
+            <el-input v-model="roleParams.username" disabled></el-input>
+          </el-form-item>
+          <el-form-item prop="name" label="角色列表">
+            <el-checkbox
+              v-model="roleCheckAll"
+              :indeterminate="isIndeterminate"
+              @change="handleCheckAllChange"
+            >
+              全选
+            </el-checkbox>
+            <el-checkbox-group
+              v-model="userRole"
+              @change="handleCheckedRoleChange"
+            >
+              <el-checkbox
+                v-for="role in roleList"
+                :key="role.id"
+                :label="role"
+              >
+                {{ role.roleName }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template #footer>
+        <el-button @click="roleCancel">取消</el-button>
+        <el-button type="primary" @click="roleSave">确定</el-button>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { reqGetUserList, reqAddOrUpdateUser } from '@/api/acl/user'
-import { IUserListResponse, IUser } from '@/api/acl/user/type'
+import {
+  reqGetUserList,
+  reqAddOrUpdateUser,
+  reqGetRoleList,
+  reqAssignRole,
+} from '@/api/acl/user'
+import {
+  IUserListResponse,
+  IUser,
+  IRoleListResponse,
+  IRole,
+  IAssignRoleParams,
+} from '@/api/acl/user/type'
 import { CodeStatus } from '@/utils/common'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -160,14 +217,14 @@ let userFormRef = ref<any>(null)
 
 // 分页数据
 let pageNo = ref<number>(1)
-let pageSize = ref<number>(10)
+let pageSize = ref<number>(5)
 let total = ref<number>(0)
 
 // 用户列表
 let userList = ref<IUser[]>([])
 
 // 添加或修改的抽屉是否显示
-let isShowDrawer = ref<boolean>(false)
+let isShowAddOrUpdateDrawer = ref<boolean>(false)
 
 // 添加或修改用户的表单数据
 let userParams = reactive<IUser>({
@@ -175,6 +232,10 @@ let userParams = reactive<IUser>({
   password: '',
   name: '',
 })
+
+// 角色列表是否全选
+const roleCheckAll = ref<boolean>(false)
+const isIndeterminate = ref(true)
 
 // 表单校验规则
 const userFormRules = reactive<FormRules<IUser>>({
@@ -194,6 +255,17 @@ const userFormRules = reactive<FormRules<IUser>>({
 
 // 原始用户名，用于保存修改之前的用户名
 let originalUsername = ref<string>('')
+
+// 分配角色抽屉是否显示
+let isShowRoleDrawer = ref<boolean>(false)
+
+// 分配角色表单
+let roleParams = reactive<IUser>({})
+
+// 用户已有的角色
+let userRole = ref<IRole[]>([])
+// 可选角色列表
+let roleList = ref<IRole[]>([])
 
 // 每页显示数据数变化
 const handleSizeChange = () => {
@@ -232,11 +304,11 @@ const addUser = () => {
   // 初始化参数
   initParams()
 
-  isShowDrawer.value = true
+  isShowAddOrUpdateDrawer.value = true
 }
 
 const updateUserBefore = (row: IUser) => {
-  originalUsername.value = row.username
+  originalUsername.value = row.username as string
 
   if (row.username == userStore.userInfo.name) {
     ElMessageBox.confirm(
@@ -271,7 +343,7 @@ const updateUser = (row: IUser) => {
     username: row.username,
     name: row.name,
   })
-  isShowDrawer.value = true
+  isShowAddOrUpdateDrawer.value = true
 }
 
 // 确定按钮
@@ -285,7 +357,7 @@ const save = async (formEl: FormInstance | undefined) => {
 
       if (res.code === CodeStatus.SUCCESS) {
         ElMessage.success(userParams.id ? '修改成功' : '添加成功')
-        isShowDrawer.value = false
+        isShowAddOrUpdateDrawer.value = false
 
         // 如果修改的是当前登录的用户，则刷新页面
         if (originalUsername.value === userStore.userInfo.name) {
@@ -304,13 +376,67 @@ const save = async (formEl: FormInstance | undefined) => {
 
 // 取消按钮
 const cancel = () => {
-  isShowDrawer.value = false
+  isShowAddOrUpdateDrawer.value = false
 }
 
 // 抽屉关闭
 const drawerClose = () => {
   if (userFormRef.value) {
     userFormRef.value.resetFields()
+  }
+}
+
+// 分配角色
+let setRole = async (row: IUser) => {
+  Object.assign(roleParams, row)
+
+  const res: IRoleListResponse = await reqGetRoleList(row.id as number)
+
+  if (res.code === CodeStatus.SUCCESS) {
+    userRole.value = res.data.assignRoles
+    roleList.value = res.data.allRolesList
+
+    isIndeterminate.value =
+      userRole.value.length > 0 &&
+      userRole.value.length !== roleList.value.length
+
+    isShowRoleDrawer.value = true
+  }
+}
+
+const handleCheckAllChange = (val: boolean) => {
+  userRole.value = val ? roleList.value : []
+  isIndeterminate.value = false
+}
+
+const handleCheckedRoleChange = (value: string[]) => {
+  const checkedCount = value.length
+  roleCheckAll.value = checkedCount === roleList.value.length
+  isIndeterminate.value =
+    checkedCount > 0 && checkedCount < roleList.value.length
+}
+
+// 分配角色抽屉关闭
+const roleCancel = () => {
+  isShowRoleDrawer.value = false
+}
+
+// 分配角色抽屉确定
+const roleSave = async () => {
+  const params: IAssignRoleParams = {
+    userId: roleParams.id as number,
+    roleIdList: userRole.value.map((item) => item.id),
+  }
+
+  const res: any = await reqAssignRole(params)
+
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success('分配角色成功')
+    isShowRoleDrawer.value = false
+
+    getUserList(pageNo.value)
+  } else {
+    ElMessage.error('分配角色失败')
   }
 }
 
