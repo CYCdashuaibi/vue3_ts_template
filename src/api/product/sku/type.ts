@@ -16,10 +16,12 @@ export interface ISaleAttrValue {
 
 // SKU 对象类型
 export interface ISkuData {
+  id?: number
   category3Id: number | null
   spuId: number | null
   tmId: number | null
   skuName: string
+  isSale: number
   price: number | null
   weight: number | null
   skuDesc: string

@@ -9,7 +9,7 @@
 
     <el-card style="margin: 10px 0">
       <el-button type="primary" :disabled="addBtnDisabled" icon="Plus">
-        添加SPU
+        添加SKU
       </el-button>
       <el-table :data="skuList" border style="margin: 10px 0">
         <el-table-column
@@ -48,8 +48,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          prop="weight
-"
+          prop="weight"
           label="重量(g)"
           align="center"
         ></el-table-column>
@@ -66,16 +65,19 @@
         >
           <template #default="scope">
             <el-button
-              icon="Plus"
-              type="primary"
-              title="添加SKU"
+              :icon="scope.row.isSale ? 'Bottom' : 'Top'"
+              :plain="scope.row.isSale === 1"
+              :type="scope.row.isSale ? 'danger' : 'success'"
+              :title="scope.row.isSale ? '下架商品' : '上架商品'"
               size="small"
+              @click="updateSale(scope.row)"
             ></el-button>
             <el-button
               icon="Edit"
               type="warning"
               title="修改SPU"
               size="small"
+              @click="updateSku(scope.row)"
             ></el-button>
             <el-button
               icon="InfoFilled"
@@ -114,9 +116,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { reqGetSkuList } from '@/api/product/sku'
+import { reqGetSkuList, reqCancelSale, reqOnSale } from '@/api/product/sku'
 import { ISkuListResponse, ISkuData } from '@/api/product/sku/type'
 import { CodeStatus } from '@/utils/common'
+import { ElMessage } from 'element-plus'
 
 defineOptions({
   name: 'SKU',
@@ -147,6 +150,7 @@ const handleCurrentChange = (pager: number) => {
   getSkuList(pager)
 }
 
+// 获取 SKU 列表
 const getSkuList = async (pager: number = 1) => {
   pageNo.value = pager
   const res: ISkuListResponse = await reqGetSkuList(pager, pageSize.value)
@@ -155,6 +159,29 @@ const getSkuList = async (pager: number = 1) => {
     total.value = res.data.total
     skuList.value = res.data.records
   }
+}
+
+// 更新商品上下架状态
+const updateSale = async (row: ISkuData) => {
+  let res: any = null
+  if (row.isSale) {
+    res = await reqCancelSale(row.id as number)
+  } else {
+    res = await reqOnSale(row.id as number)
+  }
+
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success(row.isSale ? '下架成功' : '上架成功')
+    getSkuList(pageNo.value)
+  } else {
+    ElMessage.success(row.isSale ? '下架失败' : '上架失败')
+  }
+}
+
+// 修改 SKU
+const updateSku = (row: ISkuData) => {
+  ElMessage.success('制作中...')
+  console.log(row)
 }
 
 onMounted(() => {
