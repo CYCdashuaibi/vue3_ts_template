@@ -9,6 +9,8 @@ enum API {
   ON_SALE_URL = '/admin/product/onSale',
   // 获取商品详情
   SKU_INFO_URL = '/admin/product/getSkuInfo',
+  // 删除商品
+  DELETE_SKU_URL = '/admin/product/deleteSku',
 }
 
 export const reqGetSkuList = (page: number, limit: number) =>
@@ -22,3 +24,6 @@ export const reqOnSale = (skuId: number) =>
 
 export const reqGetSkuInfo = (skuId: number) =>
   request.get<any, ISkuInfoResponse>(`${API.SKU_INFO_URL}/${skuId}`)
+
+export const reqDeleteSku = (skuId: number) =>
+  request.delete<any, any>(`${API.DELETE_SKU_URL}/${skuId}`)

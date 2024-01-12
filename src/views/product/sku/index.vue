@@ -86,7 +86,7 @@
               size="small"
               @click="showDetail(scope.row)"
             ></el-button>
-            <el-popconfirm title="确认删除吗?">
+            <el-popconfirm title="确认删除吗?" @confirm="deleteSku(scope.row)">
               <template #reference>
                 <el-button
                   icon="Delete"
@@ -175,7 +175,6 @@
                   preview-teleported
                   fit="contain"
                 />
-                <!-- {{ skuImage.imgUrl }} -->
               </el-carousel-item>
             </el-carousel>
           </div>
@@ -192,6 +191,7 @@ import {
   reqCancelSale,
   reqOnSale,
   reqGetSkuInfo,
+  reqDeleteSku,
 } from '@/api/product/sku'
 import { ISkuListResponse, ISkuData } from '@/api/product/sku/type'
 import { CodeStatus } from '@/utils/common'
@@ -286,6 +286,18 @@ const showDetail = async (row: ISkuData) => {
     spuDetail.value = res.data
   } else {
     ElMessage.error('获取商品详情数据失败')
+  }
+}
+
+// 删除商品
+const deleteSku = async (row: ISkuData) => {
+  const res = await reqDeleteSku(row.id as number)
+
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success('删除成功')
+    getSkuList(skuList.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  } else {
+    ElMessage.error('删除失败')
   }
 }
 
