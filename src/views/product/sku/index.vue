@@ -11,7 +11,7 @@
       <el-button type="primary" :disabled="addBtnDisabled" icon="Plus">
         添加SPU
       </el-button>
-      <el-table border style="margin: 10px 0">
+      <el-table :data="skuList" border style="margin: 10px 0">
         <el-table-column
           label="序号"
           type="index"
@@ -19,23 +19,45 @@
           align="center"
         ></el-table-column>
         <el-table-column
+          prop="skuName"
           label="名称"
           width="200px"
           align="center"
         ></el-table-column>
         <el-table-column
+          prop="skuDesc"
           label="描述"
           width="250px"
           align="center"
         ></el-table-column>
         <el-table-column
+          prop="skuDefaultImg"
           label="默认图片"
           width="150px"
           align="center"
+        >
+          <template #default="scope">
+            <el-image
+              style="width: 130px"
+              :src="scope.row.skuDefaultImg"
+              :preview-src-list="[scope.row.skuDefaultImg]"
+              placeholder="图片加载中..."
+              :preview-teleported="true"
+              fit="contain"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="weight
+"
+          label="重量(g)"
+          align="center"
         ></el-table-column>
-        <el-table-column label="重量(g)" align="center"></el-table-column>
-        <el-table-column label="价格(元)" align="center"></el-table-column>
-        <el-table-column label="价格(元)" align="center"></el-table-column>
+        <el-table-column
+          prop="price"
+          label="价格(元)"
+          align="center"
+        ></el-table-column>
         <el-table-column
           width="205px"
           label="操作"
@@ -91,7 +113,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { reqGetSkuList } from '@/api/product/sku'
+import { ISkuListResponse, ISkuData } from '@/api/product/sku/type'
+import { CodeStatus } from '@/utils/common'
 
 defineOptions({
   name: 'SKU',
@@ -104,18 +129,37 @@ let pageNo = ref<number>(0)
 let pageSize = ref<number>(5)
 let total = ref<number>(0)
 
+// sku 列表
+let skuList = ref<ISkuData[]>([])
+
 const categoryChange = async () => {
   // 重置添加按钮的禁用状态
   addBtnDisabled.value = false
 }
 
 // 每页显示数据数变化
-const handleSizeChange = () => {}
+const handleSizeChange = () => {
+  getSkuList()
+}
 
 // 当前页数变化
 const handleCurrentChange = (pager: number) => {
-  console.log(pager)
+  getSkuList(pager)
 }
+
+const getSkuList = async (pager: number = 1) => {
+  pageNo.value = pager
+  const res: ISkuListResponse = await reqGetSkuList(pager, pageSize.value)
+
+  if (res.code === CodeStatus.SUCCESS) {
+    total.value = res.data.total
+    skuList.value = res.data.records
+  }
+}
+
+onMounted(() => {
+  getSkuList()
+})
 </script>
 
 <style scoped></style>

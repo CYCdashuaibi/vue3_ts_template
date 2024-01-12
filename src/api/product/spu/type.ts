@@ -6,10 +6,10 @@ export interface IResponse {
 
 // SPU数据的ts类型
 export interface ISpuData {
-  id?: number
+  id?: number | null
   spuName: string
   description: string
-  category3Id: number | string
+  category3Id: number | null
   tmId: number | null
   spuSaleAttrList: null | ISpuSaleAttr[]
   spuImageList: null | ISpuImg[]
@@ -32,7 +32,7 @@ export interface ISpuListResponseData extends IResponse {
 
 // 品牌数据类型
 export interface ITrademark {
-  id: number
+  id: number | null
   tmName: string
   logoUrl: string
 }
@@ -44,14 +44,17 @@ export interface IAllTrademarkResponseData extends IResponse {
 
 // 商品图片类型
 export interface ISpuImg {
-  id?: number
+  id?: number | null
   createTime?: string
   updateTime?: string
-  spuId?: number
+  spuId?: number | null
   imgName?: string
   imgUrl?: string
   name?: string
   url?: string
+  response?: {
+    data: string
+  }
 }
 
 // SPU图片接口返回的数据类型
@@ -61,11 +64,11 @@ export interface ISpuImgResponseData extends IResponse {
 
 // 销售属性值对象的数据类型
 export interface ISpuSaleAttrValue {
-  id?: number
+  id?: number | null
   createTime?: null
   updateTime?: null
-  spuId?: number
-  baseSaleAttrId: number
+  spuId?: number | null
+  baseSaleAttrId: number | null
   saleAttrValueName: string
   saleAttrName?: string
   isChecked?: null
@@ -73,15 +76,16 @@ export interface ISpuSaleAttrValue {
 
 // 销售属性对象的数据类型
 export interface ISpuSaleAttr {
-  id?: number
+  id?: number | null
   createTime?: null
   updateTime?: null
-  spuId?: number
-  baseSaleAttrId: number
+  spuId?: number | null
+  baseSaleAttrId: number | null
   saleAttrName: string
   spuSaleAttrValueList: ISpuSaleAttrValue[]
   isEdit?: boolean
   saleAttrValue?: string
+  saleIdAndsaleValueId?: string
 }
 
 // 销售属性列表接口返回的数据类型
@@ -91,7 +95,7 @@ export interface ISpuSaleAttrResponseData extends IResponse {
 
 // 全部的 SPU 返回数据类型
 export interface ISaleAttr {
-  id: number
+  id: number | null
   name: string
   createTime: string
   updateTime: string

@@ -189,19 +189,17 @@ const initParams = () => {
     skuSaleAttrValueList: [],
   })
 
-  delete initParams.id
-
   attrList.value = []
   spuSaleAttrList.value = []
   spuImageList.value = []
 }
 
 // 获取添加 SKU 需要的数据
-const getAddSkuData = async (attrIdObj, spu: ISpuData) => {
+const getAddSkuData = async (attrIdObj: any, spu: ISpuData) => {
   initParams()
 
   skuParams.category3Id = attrIdObj.category3Id
-  skuParams.spuId = spu.id
+  skuParams.spuId = spu.id as number
   skuParams.tmId = spu.tmId
 
   const attrListRes: IAttrListResponse = await reqAttrList(attrIdObj)
@@ -209,13 +207,15 @@ const getAddSkuData = async (attrIdObj, spu: ISpuData) => {
     attrList.value = attrListRes.data
   }
 
-  const spuImageListRes: ISpuImgResponseData = await reqSpuImageList(spu.id)
+  const spuImageListRes: ISpuImgResponseData = await reqSpuImageList(
+    spu.id as number,
+  )
   if (spuImageListRes.code === CodeStatus.SUCCESS) {
     spuImageList.value = spuImageListRes.data
   }
 
   const spuSaleAttrListRes: ISpuSaleAttrResponseData = await reqSpuSaleAttrList(
-    spu.id,
+    spu.id as number,
   )
   if (spuSaleAttrListRes.code === CodeStatus.SUCCESS) {
     spuSaleAttrList.value = spuSaleAttrListRes.data
@@ -228,7 +228,7 @@ const setDefaultImg = (row: ISpuImg) => {
   imgTabelRef.value.clearSelection()
   // 复选框选中
   imgTabelRef.value.toggleRowSelection(row, true)
-  skuParams.skuDefaultImg = row.imgUrl
+  skuParams.skuDefaultImg = row.imgUrl as string
 }
 
 // 保存

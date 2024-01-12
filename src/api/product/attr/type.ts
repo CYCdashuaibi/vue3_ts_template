@@ -64,6 +64,7 @@ export interface IAttr {
   attrName: string
   categoryLevel: number
   attrValueList: Array<IAttrValue>
+  attrIdAndValueId?: string
 }
 
 // 属性列表返回数据类型

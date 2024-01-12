@@ -118,12 +118,14 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" width="80px">
-          <el-button
-            type="danger"
-            size="small"
-            icon="Delete"
-            @click="saleAttrList.splice($index, 1)"
-          ></el-button>
+          <template #default="{ $index }">
+            <el-button
+              type="danger"
+              size="small"
+              icon="Delete"
+              @click="saleAttrList.splice($index, 1)"
+            ></el-button>
+          </template>
         </el-table-column>
       </el-table>
     </el-form-item>
@@ -172,7 +174,7 @@ let allSaleAttrList = ref<ISaleAttr[]>([])
 
 // 已有的SPU对象
 let spuParams = ref<ISpuData>({
-  category3Id: '',
+  category3Id: null,
   spuName: '', // spu的名字
   description: '', // spu的描述
   tmId: null,
@@ -304,7 +306,7 @@ const toEdit = (row: ISpuSaleAttr) => {
 
 // 添加属性值输入框失去焦点
 const toLook = (row: ISpuSaleAttr) => {
-  if (!row.saleAttrValue.trim()) {
+  if (!row.saleAttrValue?.trim()) {
     ElMessage.error('属性值不能为空')
     nextTick(() => {
       if (saleAttrValueIptRef.value) {
@@ -352,7 +354,7 @@ const initParams = () => {
 
   saleAttrList.value = []
 
-  selectSaleAttrId.value = ''
+  selectSaleAttrId.value = null
 
   delete spuParams.value.id
 }

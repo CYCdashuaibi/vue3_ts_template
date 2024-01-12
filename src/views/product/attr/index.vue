@@ -206,7 +206,7 @@ const addAttr = () => {
     categoryLevel: 3,
   })
 
-  delete attrParams.value.id
+  delete attrParams.id
 }
 
 // 添加属性值

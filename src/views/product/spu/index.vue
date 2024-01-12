@@ -110,11 +110,7 @@
               <el-image
                 style="height: 80px"
                 :src="scope.row.skuDefaultImg"
-                :zoom-rate="1.2"
-                :max-scale="7"
-                :min-scale="0.2"
-                :preview-src-list="scope.row.skuDefaultImg"
-                :initial-index="scope.$index"
+                :preview-src-list="[scope.row.skuDefaultImg]"
                 placeholder="图片加载中..."
                 preview-teleported
                 fit="contain"
@@ -240,7 +236,7 @@ const updateSpu = (row: ISpuData) => {
 
 // 查看 Sku 列表
 const getSkuList = async (row: ISpuData) => {
-  const res = await reqGetSkuListBySpuId(row.id)
+  const res = await reqGetSkuListBySpuId(row.id as number)
   if (res.code === CodeStatus.SUCCESS) {
     skuList.value = res.data
     isShowSkuList.value = true
@@ -248,7 +244,7 @@ const getSkuList = async (row: ISpuData) => {
 }
 
 const deleteSpu = async (row: ISpuData) => {
-  const res = await reqDeleteSpu(row.id)
+  const res = await reqDeleteSpu(row.id as number)
   if (res.code === CodeStatus.SUCCESS) {
     ElMessage.success('删除成功')
     getSpuList(spuList.value.length > 1 ? pageNo.value : pageNo.value - 1)
@@ -258,7 +254,7 @@ const deleteSpu = async (row: ISpuData) => {
 }
 
 // spuForm 取消
-const changeScene = (options) => {
+const changeScene = (options: any) => {
   // 展示 SPU 列表
   scene.value = options.scene
 
