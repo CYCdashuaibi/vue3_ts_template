@@ -28,3 +28,24 @@ export interface IRoleListResponse extends IResponse {
     pages: number
   }
 }
+
+// 权限数据类型
+export interface IPermission {
+  id: number
+  createTime: string
+  updateTime: string
+  pid: number
+  name: string
+  code: string
+  toCode: string
+  type: number
+  status: null
+  level: number
+  children: IPermission[]
+  select: boolean
+}
+
+// 根据角色获取权限接口返回的数据类型
+export interface IGetPermissionResponse extends IResponse {
+  data: IPermission[]
+}

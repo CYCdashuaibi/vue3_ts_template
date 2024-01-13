@@ -105,6 +105,7 @@
 
     <!-- 添加角色对话框 -->
     <el-dialog
+      :close-on-click-modal="false"
       v-model="addOrUpdateDialogVisible"
       :title="roleParams.id ? '修改角色' : '添加角色'"
       @close="addOrUpdateDialogClose"
@@ -133,13 +134,52 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 分配角色抽屉 -->
+    <el-drawer
+      @close="permissionDrawerClose"
+      v-model="permissionDrawerVisible"
+      size="35%"
+      direction="rtl"
+    >
+      <template #header>
+        <h4>分配权限</h4>
+      </template>
+      <template #default>
+        <el-tree
+          v-loading="permissionTreeLoading"
+          ref="treeRef"
+          :data="permissionList"
+          show-checkbox
+          node-key="id"
+          default-expand-all
+          :default-checked-keys="defaultCheckedPermissionIdList"
+          :props="defaultProps"
+        />
+      </template>
+      <template #footer>
+        <el-button @click="setPermissionCancel">取消</el-button>
+        <el-button type="primary" @click="setPermissionSave">确定</el-button>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import useLayoutSettingStore from '@/store/modules/setting'
-import { reqGetRoleList, reqAddOrUpdateRole } from '@/api/acl/role'
-import type { IRole, IRoleListResponse } from '@/api/acl/role/type'
+import {
+  reqGetRoleList,
+  reqAddOrUpdateRole,
+  reqGetPermission,
+  reqAssignPermission,
+  reqRemoveRole,
+} from '@/api/acl/role'
+import type {
+  IRole,
+  IRoleListResponse,
+  IPermission,
+  IGetPermissionResponse,
+} from '@/api/acl/role/type'
 import { ElMessage } from 'element-plus'
 import type { FormRules, FormInstance } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
@@ -154,6 +194,9 @@ const settingStore = useLayoutSettingStore()
 
 // 添加或修改角色表单实例
 const addOrUpdateFormRef = ref<any>(null)
+
+// 分配权限树形控件实例
+const treeRef = ref<any>(null)
 
 // 分页数据
 let pageNo = ref<number>(1)
@@ -176,6 +219,26 @@ let roleParams = reactive<IRole>({})
 let roleParamsRules = reactive<FormRules<IRole>>({
   roleName: [{ required: true, message: '请输入角色名称' }],
 })
+
+// 分配角色抽屉是否可见
+const permissionDrawerVisible = ref<boolean>(false)
+
+const defaultProps = {
+  children: 'children',
+  label: 'name',
+}
+
+// 角色权限列表
+const permissionList = ref<IPermission[]>([])
+
+// 分配权限参数
+const permissionParams = ref<IRole>({})
+
+// 默认勾选的角色权限 id 列表
+const defaultCheckedPermissionIdList = ref<number[]>([])
+
+// 分配权限树形控件的加载状态
+const permissionTreeLoading = ref<boolean>(false)
 
 // 每页显示数据数变化
 const handleSizeChange = () => {
@@ -217,10 +280,13 @@ const updateRole = (row: IRole) => {
   addOrUpdateDialogVisible.value = true
 }
 
-// 编辑角色
-const deleteRole = (row: IRole) => {
-  console.log(row)
-  ElMessage.success('删除成功')
+// 删除角色
+const deleteRole = async (row: IRole) => {
+  const res = await reqRemoveRole(row.id as number)
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success('删除成功')
+    getRoleList(roleList.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  }
 }
 
 // 添加或修改确定
@@ -264,9 +330,67 @@ const addOrUpdateDialogClose = () => {
 }
 
 // 分配权限
-const setPermission = (row: IRole) => {
-  console.log(row)
+const setPermission = async (role: IRole) => {
+  permissionParams.value = role
+  permissionDrawerVisible.value = true
+
+  // 开启局部加载效果
+  permissionTreeLoading.value = true
+
+  try {
+    const res: IGetPermissionResponse = await reqGetPermission(
+      role.id as number,
+    )
+    if (res.code === CodeStatus.SUCCESS) {
+      permissionList.value = res.data
+      defaultCheckedPermissionIdList.value = filterDefaultChecked(res.data, [])
+    }
+  } catch (error) {
+    console.error('Error loading permissions:', error)
+    ElMessage.error('加载权限数据失败')
+  } finally {
+    // 关闭局部加载效果
+    permissionTreeLoading.value = false
+  }
 }
+// 过滤默认选择的权限列表
+const filterDefaultChecked = (
+  permissionList: IPermission[],
+  initList: number[],
+) => {
+  permissionList.forEach((item: IPermission) => {
+    if (item.select && item.level === 4) {
+      initList.push(item.id)
+    }
+
+    if (item.children && item.children.length) {
+      filterDefaultChecked(item.children, initList)
+    }
+  })
+  return initList
+}
+
+// 分配权限取消
+const setPermissionCancel = () => {
+  permissionDrawerVisible.value = false
+}
+
+// 分配权限确定
+const setPermissionSave = async () => {
+  const res = await reqAssignPermission(permissionParams.value.id as number, [
+    ...treeRef.value.getCheckedKeys(),
+    ...treeRef.value.getHalfCheckedKeys(),
+  ])
+
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success('分配权限成功')
+    permissionDrawerVisible.value = false
+    window.location.reload()
+  }
+}
+
+// 分配权限抽屉关闭
+const permissionDrawerClose = () => {}
 
 // 重置
 const reset = () => {
