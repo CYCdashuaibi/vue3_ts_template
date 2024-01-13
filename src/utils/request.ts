@@ -3,6 +3,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import useUserStore from '@/store/modules/user'
 import { useRouter, useRoute } from 'vue-router'
+import { CodeStatus } from '@/utils/common'
 
 // 创建 axios 实例
 // axios.create() 与 导入的 axios 一样，可以创建一个 axios 实例，该实例具有自己的配置
@@ -37,6 +38,10 @@ request.interceptors.request.use((config) => {
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
+    if (response.data.code !== CodeStatus.SUCCESS) {
+      ElMessage.error(response.data.data || response.data.message)
+    }
+
     // if (loadingInstance) loadingInstance.close()
     return response.data
   },

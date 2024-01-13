@@ -4,22 +4,40 @@
     <el-card style="height: 75px">
       <el-form inline class="search-form">
         <el-form-item label="用户名">
-          <el-input placeholder="请输入搜索关键词"></el-input>
+          <el-input
+            v-model="searchKeyWord"
+            placeholder="请输入搜索的用户姓名"
+          ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">搜索</el-button>
-          <el-button style="color: #409eff">重置</el-button>
+          <el-button @click="search" :disabled="!searchKeyWord" type="primary">
+            搜索
+          </el-button>
+          <el-button @click="reset" style="color: #409eff">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
 
     <!-- 内容 -->
     <el-card style="margin: 10px 0">
-      <el-button type="primary" @click="addUser">添加用户</el-button>
-      <el-button type="danger">批量删除</el-button>
+      <el-button type="primary" icon="Plus" @click="addUser">
+        添加用户
+      </el-button>
+      <el-button
+        type="danger"
+        @click="batchRemoveUser"
+        :disabled="!selectUserList.length"
+      >
+        批量删除
+      </el-button>
 
       <!-- 用户列表表格 -->
-      <el-table :data="userList" border style="margin: 10px 0">
+      <el-table
+        @selection-change="handleTableSelectionChange"
+        :data="userList"
+        border
+        style="margin: 10px 0"
+      >
         <el-table-column
           type="selection"
           width="50px"
@@ -27,49 +45,65 @@
         ></el-table-column>
         <el-table-column
           type="index"
-          width="80px"
+          width="60px"
           align="center"
           label="#"
         ></el-table-column>
         <el-table-column
-          width="80px"
+          width="70px"
           prop="id"
           align="center"
           label="id"
         ></el-table-column>
         <el-table-column
+          min-width="150px"
           prop="username"
           align="center"
           label="用户姓名"
         ></el-table-column>
         <el-table-column
+          min-width="150px"
           prop="name"
           align="center"
           label="用户昵称"
         ></el-table-column>
-        <el-table-column prop="roleName" align="center" label="用户角色">
+        <el-table-column
+          min-width="180px"
+          prop="roleName"
+          align="center"
+          label="用户角色"
+        >
           <template #default="{ row }">
-            <el-tag
-              style="margin: 2px"
-              v-for="item in row.roleName.split(',')"
-              :key="item"
-              type="success"
-            >
-              {{ item }}
-            </el-tag>
+            <template v-if="row.roleName">
+              <el-tag
+                style="margin: 2px"
+                v-for="item in row.roleName.split(',')"
+                :key="item"
+                type="success"
+              >
+                {{ item }}
+              </el-tag>
+            </template>
           </template>
         </el-table-column>
         <el-table-column
+          width="165px"
           prop="createTime"
           align="center"
           label="创建时间"
         ></el-table-column>
         <el-table-column
+          width="165px"
           prop="updateTime"
           align="center"
           label="更新时间"
         ></el-table-column>
-        <el-table-column width="270px" align="center" label="操作">
+        <el-table-column
+          fixed="right"
+          width="270px"
+          align="center"
+          label="操作"
+        >
           <template #default="scope">
             <el-button
               icon="User"
@@ -87,7 +121,13 @@
             >
               编辑
             </el-button>
-            <el-button icon="Delete" size="small" type="danger">删除</el-button>
+            <el-popconfirm title="确认删除吗?" @confirm="deleteUser(scope.row)">
+              <template #reference>
+                <el-button icon="Delete" size="small" type="danger">
+                  删除
+                </el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
@@ -192,6 +232,8 @@ import {
   reqAddOrUpdateUser,
   reqGetRoleList,
   reqAssignRole,
+  reqRemoveUser,
+  reqBatchRemoveUser,
 } from '@/api/acl/user'
 import {
   IUserListResponse,
@@ -204,20 +246,23 @@ import { CodeStatus } from '@/utils/common'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import useUserStore from '@/store/modules/user'
-
-// 用户仓库
-const userStore = useUserStore()
+import useLayoutSettingStore from '@/store/modules/setting'
 
 defineOptions({
   name: 'User',
 })
+
+// 用户仓库
+const userStore = useUserStore()
+// layout 设置仓库
+const settingStore = useLayoutSettingStore()
 
 // 添加或修改用户表单实例
 let userFormRef = ref<any>(null)
 
 // 分页数据
 let pageNo = ref<number>(1)
-let pageSize = ref<number>(5)
+let pageSize = ref<number>(10)
 let total = ref<number>(0)
 
 // 用户列表
@@ -267,6 +312,12 @@ let userRole = ref<IRole[]>([])
 // 可选角色列表
 let roleList = ref<IRole[]>([])
 
+// 表格多选框选择的用户
+let selectUserList = ref<IUser[]>([])
+
+// 搜索关键字
+let searchKeyWord = ref<string>('')
+
 // 每页显示数据数变化
 const handleSizeChange = () => {
   getUserList()
@@ -281,7 +332,11 @@ const handleCurrentChange = (pager: number) => {
 const getUserList = async (pager: number = 1) => {
   pageNo.value = pager
 
-  const res: IUserListResponse = await reqGetUserList(pager, pageSize.value)
+  const res: IUserListResponse = await reqGetUserList(
+    pager,
+    pageSize.value,
+    searchKeyWord.value,
+  )
   if (res.code === CodeStatus.SUCCESS) {
     userList.value = res.data.records
     total.value = res.data.total
@@ -438,6 +493,53 @@ const roleSave = async () => {
   } else {
     ElMessage.error('分配角色失败')
   }
+}
+
+// 删除单个用户
+const deleteUser = async (row: IUser) => {
+  const res = await reqRemoveUser(row.id as number)
+
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success('删除成功')
+    getUserList(userList.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  } else {
+    ElMessage.error('删除失败')
+  }
+}
+
+// 表格多选框变化
+const handleTableSelectionChange = (val: IUser[]) => {
+  selectUserList.value = val
+}
+
+// 批量删除用户
+const batchRemoveUser = async () => {
+  const res = await reqBatchRemoveUser(
+    selectUserList.value
+      .map((item) => item.id)
+      .filter((id): id is number => id !== null && id !== undefined),
+  )
+
+  if (res.code === CodeStatus.SUCCESS) {
+    ElMessage.success('删除成功')
+    getUserList(
+      userList.value.length - selectUserList.value.length > 0
+        ? pageNo.value
+        : pageNo.value - 1,
+    )
+  } else {
+    ElMessage.error('删除失败')
+  }
+}
+
+// 重置
+const reset = () => {
+  settingStore.refresh = !settingStore.refresh
+}
+
+// 搜索
+const search = () => {
+  getUserList()
 }
 
 onMounted(() => {
