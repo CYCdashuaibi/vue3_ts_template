@@ -12,12 +12,15 @@ import globalComponents from '@/components'
 // 配置 element-plus 的国际化
 // @ts-expect-error 忽略当前文件ts类型的检测否则有红色提示(打包会失败)
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+// 暗黑模式需要的样式
+import 'element-plus/theme-chalk/dark/css-vars.css'
 // 引入路由
 import router from './router'
 // 导入仓库
 import pinia from '@/store'
 // 导入导航守卫
 import '@/permission'
+import 'default-passive-events'
 
 const app = createApp(App)
 

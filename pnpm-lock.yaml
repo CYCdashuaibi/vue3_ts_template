@@ -11,6 +11,9 @@ dependencies:
   axios:
     specifier: ^1.6.0
     version: 1.6.0
+  default-passive-events:
+    specifier: ^2.0.0
+    version: 2.0.0
   element-plus:
     specifier: ^2.4.1
     version: 2.4.1(vue@3.3.7)
@@ -2174,6 +2177,10 @@ packages:
       execa: 7.2.0
       titleize: 3.0.0
     dev: true
+
+  /default-passive-events@2.0.0:
+    resolution: {integrity: sha512-eMtt76GpDVngZQ3ocgvRcNCklUMwID1PaNbCNxfpDXuiOXttSh0HzBbda1HU9SIUsDc02vb7g9+3I5tlqe/qMQ==}
+    dev: false
 
   /define-data-property@1.1.1:
     resolution: {integrity: sha512-E7uGkTzkk1d0ByLeSc6ZsFS79Axg+m1P/VsgYsxHgiuc3tFSj+MjMIwe90FC4lOAZzNBdY7kkO2P2wKdsQ1vgQ==}

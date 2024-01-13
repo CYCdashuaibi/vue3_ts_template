@@ -1,5 +1,7 @@
 <template>
-  <div class="tabbar">
+  <div
+    :class="['tabbar', layoutSettingStore.dark ? 'tabbar-dark' : 'tabar-white']"
+  >
     <div class="tabbar-left">
       <el-icon style="margin-right: 10px" @click="foldMenu">
         <component
@@ -39,9 +41,16 @@ const foldMenu = () => {
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
-  background: linear-gradient(to right, #ffffff, #f2f2f2, #e4e4f2);
   border-bottom: 1px solid #8b8b8b;
   box-sizing: border-box;
+
+  &.tabbar-dark {
+    background: linear-gradient(to right, #000000, #121212, #1d1e1f);
+  }
+
+  &.tabar-white {
+    background: linear-gradient(to right, #ffffff, #f2f2f2, #e4e4f2);
+  }
 
   .tabbar-left {
     display: flex;

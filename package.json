@@ -21,6 +21,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
     "axios": "^1.6.0",
+    "default-passive-events": "^2.0.0",
     "element-plus": "^2.4.1",
     "mockjs": "^1.1.0",
     "nprogress": "^0.2.0",

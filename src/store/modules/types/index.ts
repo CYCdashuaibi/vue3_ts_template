@@ -18,4 +18,5 @@ export interface IUserState {
 export interface ISettingState {
   fold: boolean
   refresh: boolean
+  dark: boolean
 }
