@@ -7,7 +7,12 @@
     @click="fullScreen"
   ></el-button>
   <!-- 设置按钮 -->
-  <el-popover placement="bottom" title="主题设置" :width="300" trigger="hover">
+  <el-popover
+    :visible="popoverVisible"
+    placement="bottom"
+    title="主题设置"
+    :width="300"
+  >
     <el-form>
       <el-form-item label="主题颜色">
         <el-color-picker
@@ -15,6 +20,7 @@
           v-model="color"
           show-alpha
           :predefine="predefineColors"
+          @change="changeColor"
         />
       </el-form-item>
       <el-form-item label="暗黑模式">
@@ -30,7 +36,12 @@
       </el-form-item>
     </el-form>
     <template #reference>
-      <el-button size="small" icon="Setting" circle></el-button>
+      <el-button
+        size="small"
+        icon="Setting"
+        @click="popoverVisible = !popoverVisible"
+        circle
+      ></el-button>
     </template>
   </el-popover>
   <!-- 用户头像 -->
@@ -80,6 +91,8 @@ const layoutSettingStore = useLayoutSettingStore()
 const $router = useRouter()
 const $route = useRoute()
 
+const popoverVisible = ref(false)
+
 // 是否开启暗黑模式
 const dark = ref<boolean>(layoutSettingStore.dark)
 
@@ -107,6 +120,15 @@ const changeDark = () => {
   layoutSettingStore.updateDark(dark.value)
   let html: HTMLElement = document.documentElement
   dark.value ? (html.className = 'dark') : (html.className = '')
+}
+
+const changeColor = (color: string) => {
+  const el = document.documentElement
+
+  // 获取 css 变量
+  getComputedStyle(el).getPropertyValue(`--el-color-primary`)
+  // 设置 css 变量
+  el.style.setProperty('--el-color-primary', color)
 }
 
 // 刷新
