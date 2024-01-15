@@ -2,9 +2,15 @@
   <div class="container">
     <!-- 数据大屏展示内容区域 -->
     <div class="screen" ref="screenRef">
-      <div class="top">顶部</div>
+      <div class="top">
+        <Top />
+      </div>
       <div class="bottom">
-        <div class="left">左侧</div>
+        <div class="left">
+          <Tourist class="tourist" />
+          <Sex class="sex" />
+          <Age class="age" />
+        </div>
         <div class="center">中间</div>
         <div class="right">右侧</div>
       </div>
@@ -14,6 +20,10 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+import Top from './components/top/index.vue'
+import Tourist from './components/tourist/index.vue'
+import Sex from './components/sex/index.vue'
+import Age from './components/age/index.vue'
 
 defineOptions({
   name: 'Screen',
@@ -58,7 +68,6 @@ onMounted
     top: 50%;
     left: 50%;
     transform-origin: left top;
-    background-color: red;
 
     .top {
       width: 100%;
@@ -66,13 +75,29 @@ onMounted
 
     .bottom {
       display: flex;
+      padding: 0 40px;
 
       .left {
         flex: 1;
+        height: 1040px;
+        display: flex;
+        flex-direction: column;
+
+        .tourist {
+          flex: 1.2;
+        }
+
+        .sex {
+          flex: 1;
+        }
+
+        .age {
+          flex: 1;
+        }
       }
 
       .center {
-        flex: 2;
+        flex: 2.05;
       }
 
       .right {
