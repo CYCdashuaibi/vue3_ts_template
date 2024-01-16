@@ -47,6 +47,20 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/404',
+    component: () => import('@/views/404/index.vue'),
+    name: 'NotFound',
+    meta: {
+      title: '404',
+      show: false,
+      icon: 'Connection',
+    },
+  },
+]
+
+// 异步路由
+export const asyncRoutes: RouteRecordRaw[] = [
+  {
     path: '/acl',
     component: () => import('@/layout/index.vue'),
     name: 'Acl',
@@ -142,16 +156,10 @@ export const constantRoutes: RouteRecordRaw[] = [
       },
     ],
   },
-  {
-    path: '/404',
-    component: () => import('@/views/404/index.vue'),
-    name: 'NotFound',
-    meta: {
-      title: '404',
-      show: false,
-      icon: 'Connection',
-    },
-  },
+]
+
+// 任意路由
+export const anyRoutes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     redirect: '/404',

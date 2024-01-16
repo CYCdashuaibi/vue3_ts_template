@@ -23,6 +23,9 @@ dependencies:
   element-plus:
     specifier: ^2.4.1
     version: 2.4.1(vue@3.3.7)
+  loadsh:
+    specifier: ^0.0.4
+    version: 0.0.4
   mockjs:
     specifier: ^1.1.0
     version: 1.1.0
@@ -3913,6 +3916,11 @@ packages:
       emojis-list: 3.0.0
       json5: 1.0.2
     dev: true
+
+  /loadsh@0.0.4:
+    resolution: {integrity: sha512-U+wLL8InpfRalWrr+0SuhWgGt10M4OyAk6G8xCYo2rwpiHtxZkWiFpjei0vO463ghW8LPCdhqQxXlMy2qicAEw==}
+    deprecated: This is a typosquat on the popular Lodash package. This is not maintained nor is the original Lodash package.
+    dev: false
 
   /locate-path@5.0.0:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}

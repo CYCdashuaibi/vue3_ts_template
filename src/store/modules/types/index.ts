@@ -12,6 +12,7 @@ export interface IUserState {
   token: string | null
   menuRoutes: RouteRecordRaw[]
   userInfo: IUserInfo | Record<string, never>
+  userAsyncRoutes: RouteRecordRaw[]
 }
 
 // 定义设置仓库类型
