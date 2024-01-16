@@ -15,7 +15,11 @@
           <Map class="map" />
           <Line class="line" />
         </div>
-        <div class="right">右侧</div>
+        <div class="right">
+          <Rank class="rank" />
+          <Year class="year" />
+          <Couter class="couter" />
+        </div>
       </div>
     </div>
   </div>
@@ -29,6 +33,9 @@ import Sex from './components/sex/index.vue'
 import Age from './components/age/index.vue'
 import Map from './components/map/index.vue'
 import Line from './components/line/index.vue'
+import Rank from './components/rank/index.vue'
+import Year from './components/year/index.vue'
+import Couter from './components/couter/index.vue'
 
 defineOptions({
   name: 'Screen',
@@ -117,6 +124,20 @@ onMounted
 
       .right {
         flex: 1;
+        display: flex;
+        flex-direction: column;
+
+        .rank {
+          flex: 1.2;
+        }
+
+        .year {
+          flex: 1;
+        }
+
+        .couter {
+          flex: 1;
+        }
       }
     }
   }
