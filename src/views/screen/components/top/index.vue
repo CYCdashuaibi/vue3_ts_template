@@ -52,19 +52,20 @@ onUnmounted(() => {
 
     .lbtn {
       float: right;
-      min-width: 150px;
+      min-width: 110px;
+      width: 110px;
       height: 40px;
       background: url('../../images/dataScreen-header-btn-bg-l.png');
       background-size: 100% 100%;
       text-align: center;
       line-height: 40px;
       color: #29fcff;
-      font-size: 20px;
+      font-size: 18px;
     }
   }
 
   .center {
-    flex: 1;
+    flex: 1.15;
 
     .title {
       height: 74px;
@@ -88,14 +89,15 @@ onUnmounted(() => {
     align-items: center;
 
     .rbtn {
-      min-width: 150px;
+      min-width: 110px;
+      width: 110px;
       height: 40px;
       background: url('../../images/dataScreen-header-btn-bg-r.png');
       background-size: 100% 100%;
       text-align: center;
       line-height: 40px;
       color: #29fcff;
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .time {

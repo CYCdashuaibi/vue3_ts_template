@@ -11,7 +11,10 @@
           <Sex class="sex" />
           <Age class="age" />
         </div>
-        <div class="center">中间</div>
+        <div class="center">
+          <Map class="map" />
+          <Line class="line" />
+        </div>
         <div class="right">右侧</div>
       </div>
     </div>
@@ -24,6 +27,8 @@ import Top from './components/top/index.vue'
 import Tourist from './components/tourist/index.vue'
 import Sex from './components/sex/index.vue'
 import Age from './components/age/index.vue'
+import Map from './components/map/index.vue'
+import Line from './components/line/index.vue'
 
 defineOptions({
   name: 'Screen',
@@ -76,10 +81,10 @@ onMounted
     .bottom {
       display: flex;
       padding: 0 40px;
+      height: 1040px;
 
       .left {
         flex: 1;
-        height: 1040px;
         display: flex;
         flex-direction: column;
 
@@ -97,7 +102,17 @@ onMounted
       }
 
       .center {
-        flex: 2.05;
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+
+        .map {
+          flex: 2;
+        }
+
+        .line {
+          flex: 1;
+        }
       }
 
       .right {

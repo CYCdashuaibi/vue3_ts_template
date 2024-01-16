@@ -21,7 +21,66 @@ const chartsRef = ref<HTMLElement | undefined>(undefined)
 onMounted(() => {
   let myChart = echarts.init(chartsRef.value)
 
-  myChart.setOption({})
+  myChart.setOption({
+    title: {
+      show: true,
+      text: '本日总数',
+      textStyle: {
+        color: '#ffffff',
+        fontSize: 14,
+      },
+      x: '20%',
+      y: 'center',
+    },
+    grid: {
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+    tooltip: {
+      trigger: 'item',
+    },
+    legend: {
+      top: '0',
+      left: '65%',
+      orient: 'vertical',
+      textStyle: {
+        color: '#fff',
+        fontSize: 16,
+      },
+      itemGap: 15,
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['50%', '95%'],
+        center: ['30%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2,
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          color: '#ffffff',
+        },
+        labelLine: {
+          show: false,
+        },
+        data: [
+          { value: 1048, name: '10岁以下' },
+          { value: 735, name: '10 - 18岁' },
+          { value: 580, name: '18 - 30岁' },
+          { value: 484, name: '30 - 40岁' },
+          { value: 300, name: '40 - 60岁' },
+          { value: 300, name: '60岁以上' },
+        ],
+      },
+    ],
+  })
 })
 </script>
 
@@ -54,6 +113,15 @@ onMounted(() => {
       span {
         color: #ff8100;
       }
+    }
+  }
+
+  .content {
+    padding: 30px 20px 20px 20px;
+
+    .charts {
+      width: 100%;
+      height: 210px;
     }
   }
 }
